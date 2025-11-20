@@ -3,8 +3,8 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   loginContainer: {
     flex: 1,
-    justifyContent: "center",
     paddingHorizontal: 30,
+    paddingTop: 80, 
     backgroundColor: "#fff",
   },
   logoIcon: {
@@ -17,18 +17,17 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 25,
     color: "#10B981",
+    marginBottom: 20, 
   },
-
 
   tabContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginBottom: 20,
     backgroundColor: "#eee",
     borderRadius: 10,
-    overflow: "hidden",  
+    overflow: "hidden",
+    marginBottom: 30, 
   },
   tabButton: {
     flex: 1,
@@ -65,10 +64,5 @@ export const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-  },
-  forgotText: {
-    textAlign: "center",
-    marginTop: 10,
-    color: "#10B981",
   },
 });
