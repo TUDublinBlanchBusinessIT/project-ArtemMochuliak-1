@@ -16,6 +16,7 @@ import EcoChallengesScreen from "./EcoChallengesScreen";
 import SwapHistoryScreen from "./SwapHistoryScreen";
 import LeaderboardsScreen from "./LeaderboardsScreen";
 import AboutSwapifyScreen from "./AboutSwapifyScreen";
+import ItemDetailsScreen from "./ItemDetailsScreen"
 import HomeFeed from "./HomeFeed";
 
 import { styles } from "../styles/styles";
@@ -84,6 +85,7 @@ function HomeStackScreen({ navigation }) {
   return (
     <Stack.Navigator screenOptions={() => screenHeader(navigation)}>
       <Stack.Screen name="HomeMain" component={HomeMain} />
+      <Stack.Screen name="ItemDetails" component={ItemDetailsScreen} />
       <Stack.Screen name="Settings" component={wrapScreen(SettingsScreen)} options={{ title: "Settings" }} />
       <Stack.Screen name="HelpSupport" component={wrapScreen(HelpSupportScreen)} options={{ title: "Help & Support" }} />
       <Stack.Screen name="EcoChallenges" component={wrapScreen(EcoChallengesScreen)} options={{ title: "Eco Challenges" }} />

@@ -17,12 +17,11 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import Ionicons from "react-native-vector-icons/Ionicons";
-
 import { styles } from "../styles/styles";
 
-
 import { db } from "../firebaseConfig";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, Timestamp, doc, getDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 export default function AddItemScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -44,7 +43,6 @@ export default function AddItemScreen() {
 
   const CONDITION_OPTIONS = ["New", "Like New", "Good", "Used", "Heavily Used"];
 
-  
   useEffect(() => {
     const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
       if (modalVisible) {
@@ -56,7 +54,6 @@ export default function AddItemScreen() {
     return () => backHandler.remove();
   }, [modalVisible]);
 
-  
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -76,7 +73,6 @@ export default function AddItemScreen() {
     ).start();
   }, []);
 
-  
   const pickImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsMultipleSelection: true,
@@ -91,7 +87,6 @@ export default function AddItemScreen() {
     }
   };
 
-  
   const convertImageToBase64 = async (uri) => {
     try {
       const base64 = await FileSystem.readAsStringAsync(uri, {
@@ -99,38 +94,39 @@ export default function AddItemScreen() {
       });
 
       return "data:image/jpeg;base64," + base64;
-
     } catch (error) {
-      console.error("Base64 Conversion Error:", error);
       return null;
     }
   };
 
-  
   const saveItemToDatabase = async () => {
     try {
+      const auth = getAuth();
+      const uid = auth.currentUser?.uid;
+
+      const userSnap = await getDoc(doc(db, "users", uid));
+      const username = userSnap.data()?.username || "Unknown user";
+
       const base64Images = [];
 
-      
       for (let img of images) {
         const base64 = await convertImageToBase64(img);
         if (base64) base64Images.push(base64);
       }
-
-      console.log("Base64 images count:", base64Images.length);
 
       await addDoc(collection(db, "items"), {
         title: title.trim(),
         category,
         condition,
         description: description.trim(),
-        images: base64Images, 
+        images: base64Images,
         createdAt: Timestamp.now(),
+        username: username,
+        uid: uid,
       });
 
       Alert.alert("Success", "Item uploaded!");
 
-      
       setTitle("");
       setCategory("");
       setCondition("");
@@ -138,14 +134,11 @@ export default function AddItemScreen() {
       setImages([]);
 
       setModalVisible(false);
-
     } catch (error) {
-      console.error("Firestore Save Error:", error);
       Alert.alert("Error", "Could not save item.");
     }
   };
 
-  
   const validateForm = () => {
     if (!title.trim()) return Alert.alert("Missing Title", "Enter a title.");
     if (!category) return Alert.alert("Missing Category", "Choose a category.");
@@ -189,7 +182,6 @@ export default function AddItemScreen() {
 
           <Text style={styles.addItem_modalTitle}>Add New Item</Text>
 
-          
           <TextInput
             placeholder="Item Title"
             value={title}
@@ -197,7 +189,6 @@ export default function AddItemScreen() {
             style={styles.addItem_input}
           />
 
-          
           <TouchableOpacity
             style={styles.addItem_dropdown}
             onPress={() => setShowCatDropdown(!showCatDropdown)}
@@ -225,7 +216,6 @@ export default function AddItemScreen() {
             </View>
           )}
 
-          
           <TouchableOpacity
             style={styles.addItem_dropdown}
             onPress={() => setShowCondDropdown(!showCondDropdown)}
@@ -253,7 +243,6 @@ export default function AddItemScreen() {
             </View>
           )}
 
-          
           <TextInput
             placeholder="Description (min 20 characters)"
             value={description}
@@ -263,13 +252,11 @@ export default function AddItemScreen() {
             textAlignVertical="top"
           />
 
-          
           <TouchableOpacity style={styles.addItem_uploadButton} onPress={pickImages}>
             <Ionicons name="image-outline" size={26} color="#fff" />
             <Text style={styles.addItem_uploadText}>Select Images</Text>
           </TouchableOpacity>
 
-          
           <View style={styles.addItem_imagePreviewContainer}>
             {images.map((img, index) => (
               <Image
@@ -280,7 +267,6 @@ export default function AddItemScreen() {
             ))}
           </View>
 
-          
           <TouchableOpacity style={styles.addItem_submitButton} onPress={validateForm}>
             <Text style={styles.addItem_submitText}>Submit Item</Text>
           </TouchableOpacity>

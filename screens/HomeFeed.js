@@ -6,15 +6,17 @@ import {
   Image,
   Dimensions,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { styles } from "../styles/styles";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const IMAGE_HEIGHT = SCREEN_WIDTH * 0.75;
 
 export default function HomeFeed() {
+  const navigation = useNavigation();
   const [items, setItems] = useState([]);
   const [activeIndex, setActiveIndex] = useState({});
 
@@ -44,13 +46,49 @@ export default function HomeFeed() {
 
   return (
     <ScrollView style={styles.feed_container} contentContainerStyle={{ padding: 15 }}>
-      
       {items.map(item => (
         <View key={item.id} style={styles.feed_card}>
 
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 15,
+              paddingBottom: 10,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: "#10B981",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 10,
+                }}
+              >
+                <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
+                  {item.username ? item.username[0].toUpperCase() : "?"}
+                </Text>
+              </View>
+
+              <Text style={{ fontSize: 16, fontWeight: "600", color: "#111" }}>
+                {item.username || "Unknown user"}
+              </Text>
+            </View>
+
+            <Text style={{ fontSize: 12, color: "#6B7280" }}>
+              {item.createdAt
+                ? new Date(item.createdAt.seconds * 1000).toLocaleDateString()
+                : ""}
+            </Text>
+          </View>
+
           {item.images?.length > 0 && (
             <View style={styles.carouselOuterFix}>
-
               <View style={styles.carouselWrapper}>
                 <FlatList
                   data={item.images}
@@ -72,11 +110,16 @@ export default function HomeFeed() {
 
                     return (
                       <View style={{ width: SCREEN_WIDTH }}>
-                        <Image
-                          source={{ uri }}
-                          style={styles.carouselImage}
-                          resizeMode="cover"
-                        />
+                        <TouchableOpacity
+                          activeOpacity={0.9}
+                          onPress={() => navigation.navigate("ItemDetails", { item })}
+                        >
+                          <Image
+                            source={{ uri }}
+                            style={styles.carouselImage}
+                            resizeMode="cover"
+                          />
+                        </TouchableOpacity>
                       </View>
                     );
                   }}
@@ -101,27 +144,30 @@ export default function HomeFeed() {
                   ))}
                 </View>
               </View>
-
             </View>
           )}
 
-          <View style={styles.feed_content}>
-            <Text style={styles.feed_title}>{item.title}</Text>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => navigation.navigate("ItemDetails", { item })}
+          >
+            <View style={styles.feed_content}>
+              <Text style={styles.feed_title}>{item.title}</Text>
 
-            <Text style={styles.feed_subtitle}>
-              {item.category} • Condition: {item.condition}
-            </Text>
+              <Text style={styles.feed_subtitle}>
+                {item.category} • Condition: {item.condition}
+              </Text>
 
-            <Text style={styles.feed_description}>
-              {item.description.length > 120
-                ? item.description.slice(0, 120) + "..."
-                : item.description}
-            </Text>
-          </View>
+              <Text style={styles.feed_description}>
+                {item.description.length > 120
+                  ? item.description.slice(0, 120) + "..."
+                  : item.description}
+              </Text>
+            </View>
+          </TouchableOpacity>
 
         </View>
       ))}
-
     </ScrollView>
   );
 }
