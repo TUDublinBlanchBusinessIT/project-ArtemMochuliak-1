@@ -13,9 +13,16 @@ import {
   Animated,
   Easing,
 } from "react-native";
+
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import Ionicons from "react-native-vector-icons/Ionicons";
+
 import { styles } from "../styles/styles";
+
+
+import { db } from "../firebaseConfig";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
 
 export default function AddItemScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -61,22 +68,70 @@ export default function AddItemScreen() {
           duration: 500,
           easing: Easing.in(Easing.ease),
           useNativeDriver: true,
-        })
+        }),
       ])
     ).start();
   }, []);
 
+  
   const pickImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsMultipleSelection: true,
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
+      quality: 0.5,
       selectionLimit: 5,
     });
 
     if (!result.canceled) {
       const newImages = result.assets.map(asset => asset.uri);
       setImages(prev => [...prev, ...newImages]);
+    }
+  };
+
+  
+  const convertImageToBase64 = async (uri) => {
+    try {
+      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: "base64" });
+      return "data:image/jpeg;base64," + base64;
+    } catch (error) {
+      console.error("Base64 error:", error);
+      return null;
+    }
+  };
+
+  
+  const saveItemToDatabase = async () => {
+    try {
+      const base64Images = [];
+
+      for (let img of images) {
+        const base64 = await convertImageToBase64(img);
+        if (base64) base64Images.push(base64);
+      }
+
+      await addDoc(collection(db, "items"), {
+        title,
+        category,
+        condition,
+        description,
+        images: base64Images,
+        createdAt: Timestamp.now(),
+      });
+
+      Alert.alert("Success", "Item has been uploaded!");
+
+      
+      setTitle("");
+      setCategory("");
+      setCondition("");
+      setDescription("");
+      setImages([]);
+
+      setTimeout(() => setModalVisible(false), 50);
+
+    } catch (error) {
+      console.error("Firestore Save Error:", error);
+      Alert.alert("Error", "Failed to save item.");
     }
   };
 
@@ -90,7 +145,7 @@ export default function AddItemScreen() {
     if (images.length === 0)
       return Alert.alert("No Images", "Please upload at least one photo.");
 
-    Alert.alert("Success", "Item is valid! (Firebase upload coming later)");
+    saveItemToDatabase();
   };
 
   return (
@@ -104,9 +159,8 @@ export default function AddItemScreen() {
       <Text style={styles.addItem_title}>Add New Item</Text>
       <Text style={styles.addItem_subtitle}>Post items you want to swap</Text>
 
-      <Modal visible={modalVisible} animationType="slide" onRequestClose={() => setModalVisible(false)}>
+      <Modal visible={modalVisible} animationType="slide">
         <ScrollView contentContainerStyle={styles.addItem_modalContainer}>
-          {/* Close Icon */}
           <TouchableOpacity
             onPress={() => setModalVisible(false)}
             style={{
@@ -121,6 +175,7 @@ export default function AddItemScreen() {
 
           <Text style={styles.addItem_modalTitle}>Add New Item</Text>
 
+          
           <TextInput
             placeholder="Item Title"
             value={title}
@@ -128,13 +183,12 @@ export default function AddItemScreen() {
             style={styles.addItem_input}
           />
 
+          
           <TouchableOpacity
             style={styles.addItem_dropdown}
             onPress={() => setShowCatDropdown(!showCatDropdown)}
           >
-            <Text style={styles.addItem_dropdownText}>
-              {category || "Select Category"}
-            </Text>
+            <Text style={styles.addItem_dropdownText}>{category || "Select Category"}</Text>
             <Ionicons name={showCatDropdown ? "chevron-up" : "chevron-down"} size={22} />
           </TouchableOpacity>
 
@@ -155,13 +209,12 @@ export default function AddItemScreen() {
             </View>
           )}
 
+          
           <TouchableOpacity
             style={styles.addItem_dropdown}
             onPress={() => setShowCondDropdown(!showCondDropdown)}
           >
-            <Text style={styles.addItem_dropdownText}>
-              {condition || "Select Condition"}
-            </Text>
+            <Text style={styles.addItem_dropdownText}>{condition || "Select Condition"}</Text>
             <Ionicons name={showCondDropdown ? "chevron-up" : "chevron-down"} size={22} />
           </TouchableOpacity>
 
@@ -182,6 +235,7 @@ export default function AddItemScreen() {
             </View>
           )}
 
+          
           <TextInput
             style={[styles.descriptionInput, { textAlign: "justify" }]}
             placeholder="Description (min 20 characters)"
@@ -191,17 +245,20 @@ export default function AddItemScreen() {
             textAlignVertical="top"
           />
 
+          
           <TouchableOpacity style={styles.addItem_uploadButton} onPress={pickImages}>
             <Ionicons name="image-outline" size={26} color="#fff" />
             <Text style={styles.addItem_uploadText}>Select Images</Text>
           </TouchableOpacity>
 
+          
           <View style={styles.addItem_imagePreviewContainer}>
             {images.map((img, index) => (
               <Image key={index} source={{ uri: img }} style={styles.addItem_previewImage} />
             ))}
           </View>
 
+          
           <TouchableOpacity style={styles.addItem_submitButton} onPress={validateForm}>
             <Text style={styles.addItem_submitText}>Submit Item</Text>
           </TouchableOpacity>
