@@ -8,7 +8,6 @@ import { useNavigationState } from "@react-navigation/native";
 
 import MessagesScreen from "./MessagesScreen";
 import ChatScreen from "./ChatScreen";
-import CommunityScreen from "./CommunityScreen";
 import ProfileScreen from "./ProfileScreen";
 import AddItemScreen from "./AddItemScreen";
 import SettingsScreen from "./SettingsScreen";
@@ -19,6 +18,7 @@ import LeaderboardsScreen from "./LeaderboardsScreen";
 import AboutSwapifyScreen from "./AboutSwapifyScreen";
 import ItemDetailsScreen from "./ItemDetailsScreen";
 import HomeFeed from "./HomeFeed";
+import MyItemsScreen from "./MyItemsScreen";
 
 import { styles } from "../styles/styles";
 
@@ -99,10 +99,10 @@ function MessagesStackScreen({ navigation }) {
   );
 }
 
-function CommunityStackScreen({ navigation }) {
+function MyItemsStackScreen({ navigation }) {
   return (
     <Stack.Navigator screenOptions={() => screenHeader(navigation)}>
-      <Stack.Screen name="CommunityMain" component={wrapScreen(CommunityScreen)} />
+      <Stack.Screen name="MyItemsMain" component={wrapScreen(MyItemsScreen)} />
     </Stack.Navigator>
   );
 }
@@ -165,15 +165,6 @@ function BottomTabs() {
             tabBarLabel: "Home",
             tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />,
           }}
-          listeners={({ navigation }) => ({
-            tabPress: (e) => {
-              e.preventDefault();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "HomeTab", state: { index: 0, routes: [{ name: "HomeMain" }] } }],
-              });
-            },
-          })}
         />
 
         <Tab.Screen
@@ -199,11 +190,13 @@ function BottomTabs() {
         />
 
         <Tab.Screen
-          name="CommunityTab"
-          component={CommunityStackScreen}
+          name="MyItemsTab"
+          component={MyItemsStackScreen}
           options={{
-            tabBarLabel: "Community",
-            tabBarIcon: ({ color }) => <Ionicons name="people-outline" size={24} color={color} />,
+            tabBarLabel: "My Items",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="pricetag-outline" size={24} color={color} />
+            ),
           }}
         />
 
