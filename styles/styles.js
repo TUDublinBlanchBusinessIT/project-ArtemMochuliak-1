@@ -1,4 +1,6 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const IMAGE_HEIGHT = SCREEN_WIDTH * 0.75;
 
 export const styles = StyleSheet.create({
 
@@ -253,6 +255,87 @@ addItem_closeText: {
   color: "#111827",
   textAlign: "center",
   fontSize: 16,
+},
+
+//Home Feed
+
+
+feed_container: {
+  flex: 1,
+  backgroundColor: "#F0FFF4",
+},
+
+feed_card: {
+  backgroundColor: "#fff",
+  borderRadius: 14,
+  overflow: "hidden",
+  marginBottom: 20,
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 6,
+  elevation: 4,
+},
+
+
+feed_content: {
+  padding: 18,
+},
+
+feed_title: {
+  fontSize: 22,
+  fontWeight: "700",
+  marginBottom: 6,
+},
+
+feed_subtitle: {
+  color: "#6b7280",
+  fontSize: 15,
+  marginBottom: 10,
+},
+
+feed_description: {
+  fontSize: 16,
+  color: "#374151",
+  lineHeight: 22,
+},
+
+
+carouselOuterFix: {
+  width: SCREEN_WIDTH,
+  alignSelf: "center",
+},
+
+carouselWrapper: {
+  width: SCREEN_WIDTH,
+  height: IMAGE_HEIGHT,
+  position: "relative",
+},
+
+carouselImage: {
+  width: SCREEN_WIDTH,
+  height: IMAGE_HEIGHT,
+},
+
+carouselDots: {
+  position: "absolute",
+  bottom: 10,
+  left: 0,
+  right: 0,
+  flexDirection: "row",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+carouselDot: {
+  width: 8,
+  height: 8,
+  borderRadius: 4,
+  backgroundColor: "#d1d5db",
+  marginHorizontal: 4,
+},
+
+carouselDotActive: {
+  backgroundColor: "#10B981",
 },
 
 });
