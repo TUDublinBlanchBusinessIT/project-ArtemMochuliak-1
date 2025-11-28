@@ -29,6 +29,7 @@ export default function AddItemScreen() {
   const [category, setCategory] = useState("");
   const [condition, setCondition] = useState("");
   const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");        
   const [images, setImages] = useState([]);
   const [showCatDropdown, setShowCatDropdown] = useState(false);
   const [showCondDropdown, setShowCondDropdown] = useState(false);
@@ -92,9 +93,8 @@ export default function AddItemScreen() {
       const base64 = await FileSystem.readAsStringAsync(uri, {
         encoding: "base64",
       });
-
       return "data:image/jpeg;base64," + base64;
-    } catch (error) {
+    } catch {
       return null;
     }
   };
@@ -119,6 +119,7 @@ export default function AddItemScreen() {
         category,
         condition,
         description: description.trim(),
+        location: location.trim(),         
         images: base64Images,
         createdAt: Timestamp.now(),
         username: username,
@@ -131,10 +132,11 @@ export default function AddItemScreen() {
       setCategory("");
       setCondition("");
       setDescription("");
+      setLocation("");                    
       setImages([]);
 
       setModalVisible(false);
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Could not save item.");
     }
   };
@@ -146,6 +148,8 @@ export default function AddItemScreen() {
     if (!description.trim()) return Alert.alert("Missing Description", "Enter a description.");
     if (description.length < 20)
       return Alert.alert("Description Too Short", "Min 20 characters.");
+    if (!location.trim())
+      return Alert.alert("Missing Location", "Enter a location.");
     if (images.length === 0)
       return Alert.alert("No Images", "Upload at least one image.");
 
@@ -250,6 +254,13 @@ export default function AddItemScreen() {
             style={[styles.descriptionInput, { textAlign: "justify" }]}
             multiline
             textAlignVertical="top"
+          />
+
+          <TextInput
+            placeholder="Location (e.g., Dublin, Ireland)"
+            value={location}
+            onChangeText={setLocation}
+            style={styles.addItem_input}
           />
 
           <TouchableOpacity style={styles.addItem_uploadButton} onPress={pickImages}>

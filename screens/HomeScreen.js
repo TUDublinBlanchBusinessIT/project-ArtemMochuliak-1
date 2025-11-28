@@ -7,6 +7,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigationState } from "@react-navigation/native";
 
 import MessagesScreen from "./MessagesScreen";
+import ChatScreen from "./ChatScreen";
 import CommunityScreen from "./CommunityScreen";
 import ProfileScreen from "./ProfileScreen";
 import AddItemScreen from "./AddItemScreen";
@@ -16,7 +17,7 @@ import EcoChallengesScreen from "./EcoChallengesScreen";
 import SwapHistoryScreen from "./SwapHistoryScreen";
 import LeaderboardsScreen from "./LeaderboardsScreen";
 import AboutSwapifyScreen from "./AboutSwapifyScreen";
-import ItemDetailsScreen from "./ItemDetailsScreen"
+import ItemDetailsScreen from "./ItemDetailsScreen";
 import HomeFeed from "./HomeFeed";
 
 import { styles } from "../styles/styles";
@@ -24,7 +25,6 @@ import { styles } from "../styles/styles";
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
-
 
 const SCREEN_LABELS = {
   HelpSupport: "Help & Support",
@@ -39,7 +39,6 @@ function getLabel(screenName) {
   return SCREEN_LABELS[screenName] || screenName.replace(/([A-Z])/g, " $1").trim();
 }
 
-
 function HomeMain() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f3f4f6" }}>
@@ -47,7 +46,6 @@ function HomeMain() {
     </SafeAreaView>
   );
 }
-
 
 function wrapScreen(ScreenComponent) {
   return function Wrapped(props) {
@@ -59,40 +57,35 @@ function wrapScreen(ScreenComponent) {
   };
 }
 
-
 function screenHeader(navigation) {
   return {
     headerShown: true,
     headerTitle: "",
     headerStyle: { backgroundColor: "#fff" },
-
     headerLeft: () => (
       <TouchableOpacity onPress={() => navigation.openDrawer()} style={{ marginLeft: 15 }}>
         <Ionicons name="menu" size={28} color="#000" />
       </TouchableOpacity>
     ),
-
     headerRight: () => (
       <Text style={{ fontSize: 18, fontWeight: "600", marginRight: 15 }}>Swapify</Text>
     ),
-
     animation: "none",
   };
 }
-
 
 function HomeStackScreen({ navigation }) {
   return (
     <Stack.Navigator screenOptions={() => screenHeader(navigation)}>
       <Stack.Screen name="HomeMain" component={HomeMain} />
       <Stack.Screen name="ItemDetails" component={ItemDetailsScreen} />
-      <Stack.Screen name="Settings" component={wrapScreen(SettingsScreen)} options={{ title: "Settings" }} />
-      <Stack.Screen name="HelpSupport" component={wrapScreen(HelpSupportScreen)} options={{ title: "Help & Support" }} />
-      <Stack.Screen name="EcoChallenges" component={wrapScreen(EcoChallengesScreen)} options={{ title: "Eco Challenges" }} />
-      <Stack.Screen name="SwapHistory" component={wrapScreen(SwapHistoryScreen)} options={{ title: "Swap History" }} />
-      <Stack.Screen name="Leaderboards" component={wrapScreen(LeaderboardsScreen)} options={{ title: "Leaderboards" }} />
-      <Stack.Screen name="AboutSwapify" component={wrapScreen(AboutSwapifyScreen)} options={{ title: "About Swapify" }} />
-      <Stack.Screen name="AddItem" component={wrapScreen(AddItemScreen)} options={{ title: "Add Item" }} />
+      <Stack.Screen name="Settings" component={wrapScreen(SettingsScreen)} />
+      <Stack.Screen name="HelpSupport" component={wrapScreen(HelpSupportScreen)} />
+      <Stack.Screen name="EcoChallenges" component={wrapScreen(EcoChallengesScreen)} />
+      <Stack.Screen name="SwapHistory" component={wrapScreen(SwapHistoryScreen)} />
+      <Stack.Screen name="Leaderboards" component={wrapScreen(LeaderboardsScreen)} />
+      <Stack.Screen name="AboutSwapify" component={wrapScreen(AboutSwapifyScreen)} />
+      <Stack.Screen name="AddItem" component={wrapScreen(AddItemScreen)} />
     </Stack.Navigator>
   );
 }
@@ -101,6 +94,7 @@ function MessagesStackScreen({ navigation }) {
   return (
     <Stack.Navigator screenOptions={() => screenHeader(navigation)}>
       <Stack.Screen name="MessagesMain" component={wrapScreen(MessagesScreen)} />
+      <Stack.Screen name="ChatScreen" component={wrapScreen(ChatScreen)} />
     </Stack.Navigator>
   );
 }
@@ -129,7 +123,6 @@ function AddItemStackScreen({ navigation }) {
   );
 }
 
-
 function BottomTabs() {
   const navState = useNavigationState((s) => s);
 
@@ -138,13 +131,10 @@ function BottomTabs() {
       const mainRoute = navState.routes[navState.index];
       const tabState = mainRoute.state;
       if (!tabState) return false;
-
       const tabRoute = tabState.routes[tabState.index];
       const stackState = tabRoute.state;
       if (!stackState) return false;
-
       const currentScreen = stackState.routes[stackState.index].name;
-
       return ["Settings", "HelpSupport", "EcoChallenges", "SwapHistory", "Leaderboards", "AboutSwapify"]
         .includes(currentScreen);
     } catch {
@@ -168,7 +158,6 @@ function BottomTabs() {
           },
         }}
       >
-        
         <Tab.Screen
           name="HomeTab"
           component={HomeStackScreen}
@@ -231,7 +220,6 @@ function BottomTabs() {
   );
 }
 
-
 function CustomDrawer({ navigation }) {
   const screens = ["Settings", "HelpSupport", "EcoChallenges", "SwapHistory", "Leaderboards", "AboutSwapify"];
 
@@ -259,7 +247,6 @@ function CustomDrawer({ navigation }) {
     </DrawerContentScrollView>
   );
 }
-
 
 export default function HomeScreen() {
   return (

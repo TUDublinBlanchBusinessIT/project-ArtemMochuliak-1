@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
@@ -48,7 +49,7 @@ export default function HomeFeed() {
     <ScrollView style={styles.feed_container} contentContainerStyle={{ padding: 15 }}>
       {items.map(item => (
         <View key={item.id} style={styles.feed_card}>
-
+          
           <View
             style={{
               flexDirection: "row",
@@ -75,9 +76,18 @@ export default function HomeFeed() {
                 </Text>
               </View>
 
-              <Text style={{ fontSize: 16, fontWeight: "600", color: "#111" }}>
-                {item.username || "Unknown user"}
-              </Text>
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: "600", color: "#111" }}>
+                  {item.username || "Unknown user"}
+                </Text>
+
+                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+                  <Ionicons name="location-outline" size={14} color="#6B7280" />
+                  <Text style={{ fontSize: 12, color: "#6B7280", marginLeft: 4 }}>
+                    {item.location || "Unknown"}
+                  </Text>
+                </View>
+              </View>
             </View>
 
             <Text style={{ fontSize: 12, color: "#6B7280" }}>
