@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  FlatList,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { getAuth } from "firebase/auth";
 import {
   doc,
   getDoc,
   updateDoc,
-  arrayUnion
+  arrayUnion,
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
@@ -22,93 +26,113 @@ export default function ChatScreen({ route }) {
 
   const [chat, setChat] = useState(null);
   const [message, setMessage] = useState("");
+  const flatListRef = useRef(null);
 
   useEffect(() => {
-    const loadChat = async () => {
-      const snap = await getDoc(doc(db, "chats", chatId));
-      setChat(snap.data());
-    };
-    loadChat();
+    const unsub = onSnapshot(doc(db, "chats", chatId), (snap) => {
+      if (snap.exists()) {
+        setChat(snap.data());
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 50);
+      }
+    });
+    return () => unsub();
   }, []);
 
   const sendMessage = async () => {
     if (!message.trim()) return;
 
+    const msg = {
+      text: message.trim(),
+      sender: currentUid,
+      timestamp: Date.now(),
+    };
+
     await updateDoc(doc(db, "chats", chatId), {
-      messages: arrayUnion({
-        text: message,
-        sender: currentUid,
-        time: Date.now()
-      }),
-      lastMessage: message,
-      lastMessageTime: Date.now()
+      messages: arrayUnion(msg),
+      lastMessage: msg.text,
+      lastMessageTime: msg.timestamp,
     });
 
     setMessage("");
   };
 
-  if (!chat) return <View />;
+  if (!chat) return null;
 
   return (
-    <View style={{ flex: 1, padding: 15 }}>
-      <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
-        Chat about: {chat.itemTitle}
-      </Text>
-
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1, backgroundColor: "#F3FFF5" }}
+      keyboardVerticalOffset={90}
+    >
       <FlatList
-        data={chat.messages}
-        keyExtractor={(_, i) => i.toString()}
-        renderItem={({ item }) => (
-          <View
-            style={{
-              alignSelf:
-                item.sender === currentUid ? "flex-end" : "flex-start",
-              marginBottom: 8,
-              padding: 10,
-              backgroundColor:
-                item.sender === currentUid ? "#10B981" : "#e5e7eb",
-              borderRadius: 10,
-              maxWidth: "75%"
-            }}
-          >
-            <Text style={{ color: item.sender === currentUid ? "white" : "#111" }}>
-              {item.text}
-            </Text>
-          </View>
-        )}
+        ref={flatListRef}
+        data={chat.messages || []}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={{ padding: 15, paddingBottom: 90 }}
+        renderItem={({ item }) => {
+          const isMine = item.sender === currentUid;
+          return (
+            <View
+              style={{
+                alignSelf: isMine ? "flex-end" : "flex-start",
+                backgroundColor: isMine ? "#10B981" : "#E5E7EB",
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+                marginVertical: 4,
+                borderRadius: 18,
+                maxWidth: "75%",
+              }}
+            >
+              <Text style={{ color: isMine ? "white" : "#111" }}>
+                {item.text}
+              </Text>
+            </View>
+          );
+        }}
       />
 
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
-          marginTop: 10
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          padding: 12,
+          backgroundColor: "#F3FFF5",
+          borderTopWidth: 1,
+          borderColor: "#D1D5DB",
         }}
       >
-        <TextInput
-          value={message}
-          onChangeText={setMessage}
-          placeholder="Type a message..."
+        <View
           style={{
-            flex: 1,
-            backgroundColor: "#f3f4f6",
-            borderRadius: 10,
-            padding: 12
-          }}
-        />
-
-        <TouchableOpacity
-          onPress={sendMessage}
-          style={{
-            marginLeft: 10,
-            backgroundColor: "#10B981",
-            padding: 12,
-            borderRadius: 10
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "#fff",
+            borderRadius: 25,
+            paddingHorizontal: 15,
+            paddingVertical: 8,
+            borderWidth: 1,
+            borderColor: "#D1D5DB",
           }}
         >
-          <Text style={{ color: "white", fontWeight: "600" }}>Send</Text>
-        </TouchableOpacity>
+          <TextInput
+            value={message}
+            onChangeText={setMessage}
+            placeholder="Type a message..."
+            style={{
+              flex: 1,
+              fontSize: 16,
+              paddingVertical: 4,
+            }}
+          />
+
+          <TouchableOpacity onPress={sendMessage}>
+            <Ionicons name="send" size={22} color="#10B981" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

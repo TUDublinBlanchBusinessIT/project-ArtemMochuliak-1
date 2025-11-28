@@ -18,7 +18,9 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  doc,
+  getDoc
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
@@ -32,32 +34,41 @@ export default function ItemDetailsScreen({ route }) {
   const createOrOpenChat = async () => {
     const auth = getAuth();
     const currentUid = auth.currentUser.uid;
-
     const itemOwnerUid = item.uid;
-    const itemOwnerUsername = item.username;
-    const currentUsername =
-      auth.currentUser.displayName ||
-      auth.currentUser.email?.split("@")[0] ||
-      "User";
 
     if (!itemOwnerUid || !currentUid) return;
 
+    
+    const currentUserSnap = await getDoc(doc(db, "users", currentUid));
+    const ownerUserSnap = await getDoc(doc(db, "users", itemOwnerUid));
+
+    const currentUsername =
+      currentUserSnap.data()?.username ||
+      auth.currentUser.displayName ||
+      "User";
+
+    const ownerUsername =
+      ownerUserSnap.data()?.username ||
+      item.username ||
+      "User";
+
+    
     const chatQuery = query(
       collection(db, "chats"),
       where("participants", "array-contains", currentUid)
     );
 
-    const querySnapshot = await getDocs(chatQuery);
-
+    const snapshot = await getDocs(chatQuery);
     let existingChat = null;
 
-    querySnapshot.forEach((docSnap) => {
+    snapshot.forEach(docSnap => {
       const data = docSnap.data();
       if (data.participants.includes(itemOwnerUid)) {
         existingChat = { id: docSnap.id, ...data };
       }
     });
 
+    
     if (existingChat) {
       navigation.navigate("MessagesTab", {
         screen: "ChatScreen",
@@ -66,19 +77,16 @@ export default function ItemDetailsScreen({ route }) {
       return;
     }
 
+    
     const newChat = await addDoc(collection(db, "chats"), {
       participants: [currentUid, itemOwnerUid],
       itemId: item.id,
       itemTitle: item.title,
-      userA: {
-        uid: currentUid,
-        username: currentUsername
-      },
-      userB: {
-        uid: itemOwnerUid,
-        username: itemOwnerUsername
-      },
-      lastMessage: `Swap request: ${item.title}`,
+
+      userA: { uid: currentUid, username: currentUsername },
+      userB: { uid: itemOwnerUid, username: ownerUsername },
+
+      lastMessage: `Hello, I would like to swap it for ${item.title}`,
       lastMessageTime: Date.now(),
       messages: []
     });
@@ -173,7 +181,7 @@ export default function ItemDetailsScreen({ route }) {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScroll={(e) => {
+        onScroll={e => {
           const index = Math.round(
             e.nativeEvent.contentOffset.x / SCREEN_WIDTH
           );
@@ -214,14 +222,10 @@ export default function ItemDetailsScreen({ route }) {
 
       <View style={{ padding: 18 }}>
         <Text style={styles.feed_title}>{item.title}</Text>
-
         <Text style={styles.feed_subtitle}>
           {item.category} • Condition: {item.condition}
         </Text>
-
-        <Text style={styles.feed_description}>
-          {item.description}
-        </Text>
+        <Text style={styles.feed_description}>{item.description}</Text>
       </View>
 
       <TouchableOpacity
