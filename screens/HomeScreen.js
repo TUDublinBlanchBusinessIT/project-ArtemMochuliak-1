@@ -16,6 +16,7 @@ import EcoChallengesScreen from "./EcoChallengesScreen";
 import SwapHistoryScreen from "./SwapHistoryScreen";
 import LeaderboardsScreen from "./LeaderboardsScreen";
 import AboutSwapifyScreen from "./AboutSwapifyScreen";
+import HomeFeed from "./HomeFeed";
 
 import { styles } from "../styles/styles";
 
@@ -41,9 +42,7 @@ function getLabel(screenName) {
 function HomeMain() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f3f4f6" }}>
-      <View style={styles.centerScreen}>
-        <Text style={styles.heading}>Home</Text>
-      </View>
+      <HomeFeed />
     </SafeAreaView>
   );
 }

@@ -15,7 +15,7 @@ import {
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { styles } from "../styles/styles";
@@ -38,11 +38,13 @@ export default function AddItemScreen() {
 
   const CATEGORY_OPTIONS = [
     "Electronics", "Clothing", "Books", "Home Appliances", "Accessories",
-    "Sports", "Toys", "Furniture", "Beauty", "Gaming", "Tools", "Pet Supplies", "Other"
+    "Sports", "Toys", "Furniture", "Beauty", "Gaming", "Tools",
+    "Pet Supplies", "Other"
   ];
 
   const CONDITION_OPTIONS = ["New", "Like New", "Good", "Used", "Heavily Used"];
 
+  
   useEffect(() => {
     const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
       if (modalVisible) {
@@ -54,6 +56,7 @@ export default function AddItemScreen() {
     return () => backHandler.remove();
   }, [modalVisible]);
 
+  
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -83,18 +86,22 @@ export default function AddItemScreen() {
     });
 
     if (!result.canceled) {
-      const newImages = result.assets.map(asset => asset.uri);
-      setImages(prev => [...prev, ...newImages]);
+      const uris = result.assets.map(a => a.uri);
+      setImages(prev => [...prev, ...uris]);
     }
   };
 
   
   const convertImageToBase64 = async (uri) => {
     try {
-      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: "base64" });
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: "base64",
+      });
+
       return "data:image/jpeg;base64," + base64;
+
     } catch (error) {
-      console.error("Base64 error:", error);
+      console.error("Base64 Conversion Error:", error);
       return null;
     }
   };
@@ -104,21 +111,24 @@ export default function AddItemScreen() {
     try {
       const base64Images = [];
 
+      
       for (let img of images) {
         const base64 = await convertImageToBase64(img);
         if (base64) base64Images.push(base64);
       }
 
+      console.log("Base64 images count:", base64Images.length);
+
       await addDoc(collection(db, "items"), {
-        title,
+        title: title.trim(),
         category,
         condition,
-        description,
-        images: base64Images,
+        description: description.trim(),
+        images: base64Images, 
         createdAt: Timestamp.now(),
       });
 
-      Alert.alert("Success", "Item has been uploaded!");
+      Alert.alert("Success", "Item uploaded!");
 
       
       setTitle("");
@@ -127,23 +137,24 @@ export default function AddItemScreen() {
       setDescription("");
       setImages([]);
 
-      setTimeout(() => setModalVisible(false), 50);
+      setModalVisible(false);
 
     } catch (error) {
       console.error("Firestore Save Error:", error);
-      Alert.alert("Error", "Failed to save item.");
+      Alert.alert("Error", "Could not save item.");
     }
   };
 
+  
   const validateForm = () => {
-    if (!title.trim()) return Alert.alert("Missing Title", "Please enter an item title.");
-    if (!category) return Alert.alert("Missing Category", "Please select a category.");
-    if (!condition) return Alert.alert("Missing Condition", "Please select the item condition.");
-    if (!description.trim()) return Alert.alert("Missing Description", "Please enter a description.");
+    if (!title.trim()) return Alert.alert("Missing Title", "Enter a title.");
+    if (!category) return Alert.alert("Missing Category", "Choose a category.");
+    if (!condition) return Alert.alert("Missing Condition", "Choose a condition.");
+    if (!description.trim()) return Alert.alert("Missing Description", "Enter a description.");
     if (description.length < 20)
-      return Alert.alert("Description Too Short", "Please describe the item in more detail.");
+      return Alert.alert("Description Too Short", "Min 20 characters.");
     if (images.length === 0)
-      return Alert.alert("No Images", "Please upload at least one photo.");
+      return Alert.alert("No Images", "Upload at least one image.");
 
     saveItemToDatabase();
   };
@@ -151,7 +162,10 @@ export default function AddItemScreen() {
   return (
     <View style={styles.addItem_container}>
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-        <TouchableOpacity style={styles.addItem_iconWrapper} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity
+          style={styles.addItem_iconWrapper}
+          onPress={() => setModalVisible(true)}
+        >
           <Ionicons name="add-circle-outline" size={90} color="#0f8a5f" />
         </TouchableOpacity>
       </Animated.View>
@@ -188,7 +202,9 @@ export default function AddItemScreen() {
             style={styles.addItem_dropdown}
             onPress={() => setShowCatDropdown(!showCatDropdown)}
           >
-            <Text style={styles.addItem_dropdownText}>{category || "Select Category"}</Text>
+            <Text style={styles.addItem_dropdownText}>
+              {category || "Select Category"}
+            </Text>
             <Ionicons name={showCatDropdown ? "chevron-up" : "chevron-down"} size={22} />
           </TouchableOpacity>
 
@@ -214,7 +230,9 @@ export default function AddItemScreen() {
             style={styles.addItem_dropdown}
             onPress={() => setShowCondDropdown(!showCondDropdown)}
           >
-            <Text style={styles.addItem_dropdownText}>{condition || "Select Condition"}</Text>
+            <Text style={styles.addItem_dropdownText}>
+              {condition || "Select Condition"}
+            </Text>
             <Ionicons name={showCondDropdown ? "chevron-up" : "chevron-down"} size={22} />
           </TouchableOpacity>
 
@@ -237,10 +255,10 @@ export default function AddItemScreen() {
 
           
           <TextInput
-            style={[styles.descriptionInput, { textAlign: "justify" }]}
             placeholder="Description (min 20 characters)"
             value={description}
             onChangeText={setDescription}
+            style={[styles.descriptionInput, { textAlign: "justify" }]}
             multiline
             textAlignVertical="top"
           />
@@ -254,7 +272,11 @@ export default function AddItemScreen() {
           
           <View style={styles.addItem_imagePreviewContainer}>
             {images.map((img, index) => (
-              <Image key={index} source={{ uri: img }} style={styles.addItem_previewImage} />
+              <Image
+                key={index}
+                source={{ uri: img }}
+                style={styles.addItem_previewImage}
+              />
             ))}
           </View>
 
