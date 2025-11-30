@@ -19,7 +19,7 @@ import AboutSwapifyScreen from "./AboutSwapifyScreen";
 import ItemDetailsScreen from "./ItemDetailsScreen";
 import HomeFeed from "./HomeFeed";
 import MyItemsScreen from "./MyItemsScreen";
-
+import MyItemDetailsScreen from "./MyItemDetailsScreen";
 import { styles } from "../styles/styles";
 
 const Drawer = createDrawerNavigator();
@@ -103,6 +103,7 @@ function MyItemsStackScreen({ navigation }) {
   return (
     <Stack.Navigator screenOptions={() => screenHeader(navigation)}>
       <Stack.Screen name="MyItemsMain" component={wrapScreen(MyItemsScreen)} />
+      <Stack.Screen name="MyItemDetails" component={wrapScreen(MyItemDetailsScreen)} />
     </Stack.Navigator>
   );
 }
@@ -163,9 +164,31 @@ function BottomTabs() {
           component={HomeStackScreen}
           options={{
             tabBarLabel: "Home",
-            tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="home-outline" size={24} color={color} />
+            ),
           }}
+          listeners={({ navigation }) => ({
+            tabPress: (e) => {
+              e.preventDefault();
+
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: "HomeTab",
+                    state: {
+                      index: 0,
+                      routes: [{ name: "HomeMain" }],
+                    },
+                  },
+                ],
+              });
+            },
+          })}
+
         />
+
 
         <Tab.Screen
           name="MessagesTab"

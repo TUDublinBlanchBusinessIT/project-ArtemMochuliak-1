@@ -6,8 +6,7 @@ import { db } from "../firebaseConfig";
 
 export default function MyItemsScreen({ navigation }) {
   const [items, setItems] = useState([]);
-  const auth = getAuth();
-  const uid = auth.currentUser.uid;
+  const uid = getAuth().currentUser.uid;
 
   useEffect(() => {
     const q = query(collection(db, "items"), where("uid", "==", uid));
@@ -21,7 +20,7 @@ export default function MyItemsScreen({ navigation }) {
   }, []);
 
   return (
-    <View style={{ flex: 1, padding: 15 }}>
+    <View style={{ flex: 1, backgroundColor: "#F0FFF4", padding: 15 }}>
       <Text style={{ fontSize: 22, fontWeight: "700", marginBottom: 15 }}>
         My Items
       </Text>
@@ -36,9 +35,7 @@ export default function MyItemsScreen({ navigation }) {
         }
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("ItemDetails", { item })
-            }
+            onPress={() => navigation.navigate("MyItemDetails", { item })}
             style={{
               flexDirection: "row",
               backgroundColor: "#fff",
@@ -62,10 +59,7 @@ export default function MyItemsScreen({ navigation }) {
                 {item.category} • {item.condition}
               </Text>
 
-              <Text
-                numberOfLines={1}
-                style={{ fontSize: 13, color: "#374151", marginTop: 4 }}
-              >
+              <Text numberOfLines={1} style={{ fontSize: 13, color: "#374151", marginTop: 4 }}>
                 {item.description}
               </Text>
             </View>
