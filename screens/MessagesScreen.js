@@ -37,9 +37,7 @@ export default function MessagesScreen() {
 
   const renderItem = ({ item }) => {
     const isUserA = item.userA?.uid === currentUid;
-
     const otherUser = isUserA ? item.userB : item.userA;
-
     const username = otherUser?.username || "Unknown user";
 
     return (
@@ -96,6 +94,28 @@ export default function MessagesScreen() {
       >
         Your Chats
       </Text>
+
+      {chats.length === 0 && (
+        <View
+          style={{
+            marginTop: 40,
+            alignItems: "center",
+          }}
+        >
+          <Ionicons
+            name="chatbubble-ellipses-outline"
+            size={60}
+            color="#10B981"
+            style={{ marginBottom: 10 }}
+          />
+          <Text style={{ fontSize: 18, fontWeight: "600", color: "#111" }}>
+            You have no chats yet
+          </Text>
+          <Text style={{ fontSize: 14, color: "#6B7280", marginTop: 4 }}>
+            Start swapping to begin a conversation!
+          </Text>
+        </View>
+      )}
 
       <FlatList
         data={chats}

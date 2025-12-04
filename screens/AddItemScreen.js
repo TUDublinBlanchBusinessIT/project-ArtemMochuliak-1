@@ -29,7 +29,7 @@ export default function AddItemScreen() {
   const [category, setCategory] = useState("");
   const [condition, setCondition] = useState("");
   const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");        
+  const [location, setLocation] = useState("");
   const [images, setImages] = useState([]);
   const [showCatDropdown, setShowCatDropdown] = useState(false);
   const [showCondDropdown, setShowCondDropdown] = useState(false);
@@ -108,10 +108,9 @@ export default function AddItemScreen() {
       const username = userSnap.data()?.username || "Unknown user";
 
       const base64Images = [];
-
       for (let img of images) {
-        const base64 = await convertImageToBase64(img);
-        if (base64) base64Images.push(base64);
+        const b64 = await convertImageToBase64(img);
+        if (b64) base64Images.push(b64);
       }
 
       await addDoc(collection(db, "items"), {
@@ -119,11 +118,11 @@ export default function AddItemScreen() {
         category,
         condition,
         description: description.trim(),
-        location: location.trim(),         
+        location: location.trim(),
         images: base64Images,
         createdAt: Timestamp.now(),
-        username: username,
-        uid: uid,
+        username,
+        uid,
       });
 
       Alert.alert("Success", "Item uploaded!");
@@ -132,7 +131,7 @@ export default function AddItemScreen() {
       setCategory("");
       setCondition("");
       setDescription("");
-      setLocation("");                    
+      setLocation("");
       setImages([]);
 
       setModalVisible(false);
@@ -146,13 +145,9 @@ export default function AddItemScreen() {
     if (!category) return Alert.alert("Missing Category", "Choose a category.");
     if (!condition) return Alert.alert("Missing Condition", "Choose a condition.");
     if (!description.trim()) return Alert.alert("Missing Description", "Enter a description.");
-    if (description.length < 20)
-      return Alert.alert("Description Too Short", "Min 20 characters.");
-    if (!location.trim())
-      return Alert.alert("Missing Location", "Enter a location.");
-    if (images.length === 0)
-      return Alert.alert("No Images", "Upload at least one image.");
-
+    if (description.length < 20) return Alert.alert("Description Too Short", "Min 20 characters.");
+    if (!location.trim()) return Alert.alert("Missing Location", "Enter a location.");
+    if (images.length === 0) return Alert.alert("No Images", "Upload at least one image.");
     saveItemToDatabase();
   };
 
@@ -170,18 +165,25 @@ export default function AddItemScreen() {
       <Text style={styles.addItem_title}>Add New Item</Text>
       <Text style={styles.addItem_subtitle}>Post items you want to swap</Text>
 
-      <Modal visible={modalVisible} animationType="slide">
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
         <ScrollView contentContainerStyle={styles.addItem_modalContainer}>
           <TouchableOpacity
             onPress={() => setModalVisible(false)}
             style={{
               position: "absolute",
-              top: Platform.OS === "android" ? 10 : 50,
-              right: 10,
-              zIndex: 2,
+              top: 5,
+              right: 5,
+              zIndex: 20,
+              backgroundColor: "rgba(255,255,255,0.85)",
+              borderRadius: 20,
+              padding: 4,
             }}
           >
-            <Ionicons name="close-circle" size={40} color="#444" />
+            <Ionicons name="close-circle" size={42} color="#444" />
           </TouchableOpacity>
 
           <Text style={styles.addItem_modalTitle}>Add New Item</Text>
@@ -205,7 +207,7 @@ export default function AddItemScreen() {
 
           {showCatDropdown && (
             <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
-              {CATEGORY_OPTIONS.map(cat => (
+              {CATEGORY_OPTIONS.map((cat) => (
                 <TouchableOpacity
                   key={cat}
                   style={[styles.addItem_dropdownItem, { width: "48%", marginBottom: 8 }]}
@@ -232,7 +234,7 @@ export default function AddItemScreen() {
 
           {showCondDropdown && (
             <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
-              {CONDITION_OPTIONS.map(cond => (
+              {CONDITION_OPTIONS.map((cond) => (
                 <TouchableOpacity
                   key={cond}
                   style={[styles.addItem_dropdownItem, { width: "48%", marginBottom: 8 }]}
@@ -270,17 +272,14 @@ export default function AddItemScreen() {
 
           <View style={styles.addItem_imagePreviewContainer}>
             {images.map((img, index) => (
-              <Image
-                key={index}
-                source={{ uri: img }}
-                style={styles.addItem_previewImage}
-              />
+              <Image key={index} source={{ uri: img }} style={styles.addItem_previewImage} />
             ))}
           </View>
 
           <TouchableOpacity style={styles.addItem_submitButton} onPress={validateForm}>
             <Text style={styles.addItem_submitText}>Submit Item</Text>
           </TouchableOpacity>
+
         </ScrollView>
       </Modal>
     </View>
